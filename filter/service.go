@@ -117,6 +117,8 @@ func (s service) evaluateRules(entry *miniflux.Entry) bool {
 			entryTarget = entry.Title
 		case "description":
 			entryTarget = entry.Content
+		case "author":
+			entryTarget = entry.Author
 		}
 
 		// We check what kind of comparator was given
