@@ -1,0 +1,12 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "helpers:pinGitHubActionDigests",
+    ":automergeMinor",
+    ":automergeDigest",
+    ":rebaseStalePrs",
+    "docker:enableMajor",
+    "schedule:automergeDaily"
+  ]
+}
