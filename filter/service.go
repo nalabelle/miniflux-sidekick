@@ -7,7 +7,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/nalabelle/miniflux-sidekick/rules"
-	miniflux "miniflux.app/client"
+	miniflux "miniflux.app/v2/client"
 )
 
 // Service is an interface for a filter service
