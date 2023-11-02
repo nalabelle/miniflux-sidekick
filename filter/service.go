@@ -4,16 +4,15 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dewey/miniflux-sidekick/rules"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/nalabelle/miniflux-sidekick/rules"
 	miniflux "miniflux.app/client"
 )
 
 // Service is an interface for a filter service
 type Service interface {
 	RunFilterJob(simulation bool)
-	Run()
 }
 
 type service struct {
@@ -30,13 +29,6 @@ func NewService(l log.Logger, c *miniflux.Client, rr rules.Repository) Service {
 		l:               l,
 	}
 }
-
-func (s *service) Run() {
-	s.RunFilterJob(false)
-}
-
-// NOTE (DIRTY HACK): this next var has also been defined in rules/rules.go. If the regex is updated here, it should be updated there as well
-var filterEntryRegex = regexp.MustCompile(`(\w+?) (\S+?) (.+)`)
 
 func (s *service) RunFilterJob(simulation bool) {
 	// Fetch all feeds.
@@ -120,31 +112,24 @@ feedLoop:
 	}
 }
 
-// evaluateRule checks a feed item against a particular rule. It returns whether this entry should be killed or not.
-func (s service) evaluateRule(entry *miniflux.Entry, rule rules.Rule) bool {
-	var shouldKill bool
-
-	// The next line should succeed; we tested it would when we loaded our rules
-	tokens := filterEntryRegex.FindStringSubmatch(rule.FilterExpression)
-
-	// We set the string we want to compare against (https://newsboat.org/releases/2.15/docs/newsboat.html#_filter_language are supported in the killfile format)
-	var entryTarget string
-	switch tokens[1] {
-	case "title":
-		entryTarget = entry.Title
-	case "content", "description":
-		// include "description" for backwards compatibility with existing killfiles; nobody should be marking entries as read based on the feed's general description
-		entryTarget = entry.Content
-	case "author":
-		entryTarget = entry.Author
+func (s service) evaluateRules(entry *miniflux.Entry) bool {
+	for _, rule := range s.rulesRepository.Rules() {
+		result := s.evaluateRule(entry, rule)
+		if result == false {
+			return false
+		}
 	}
+	return true
+}
 
+func (s service) evaluateTarget(entryTarget string, rule rules.Rule) bool {
+	var shouldKill bool
 	// We check what kind of comparator was given
-	switch tokens[2] {
+	switch rule.Operator {
 	case "=~", "!~":
-		invertFilter := tokens[2][0] == '!'
+		invertFilter := rule.Operator[0] == '!'
 
-		matched, err := regexp.MatchString(tokens[3], entryTarget)
+		matched, err := regexp.MatchString(rule.Match, entryTarget)
 		if err != nil {
 			level.Error(s.l).Log("err", err)
 		}
@@ -153,12 +138,22 @@ func (s service) evaluateRule(entry *miniflux.Entry, rule rules.Rule) bool {
 			shouldKill = true
 		}
 	case "#", "!#":
-		invertFilter := tokens[2][0] == '!'
+		invertFilter := rule.Operator[0] == '!'
 
 		var containsTerm bool
-		blacklistTokens := strings.Split(tokens[3], ",")
-		for _, t := range blacklistTokens {
-			if strings.Contains(entryTarget, t) {
+		blacklistTokens := strings.Split(rule.Match, ",")
+
+		for _, token := range blacklistTokens {
+			var ciPrefix = "(?i)"
+			// Trim the case-insensitive prefix so we don't quote it and remove it
+			trimToken := strings.TrimPrefix(token, "(?i)")
+			if trimToken == token {
+				ciPrefix = ""
+			}
+
+			// Break on word boundaries so we don't pull up substrings
+			search := regexp.MustCompile(ciPrefix + `\b` + regexp.QuoteMeta(trimToken) + `\b`)
+			if search.MatchString(entryTarget) {
 				containsTerm = true
 				break
 			}
@@ -168,4 +163,29 @@ func (s service) evaluateRule(entry *miniflux.Entry, rule rules.Rule) bool {
 		}
 	}
 	return shouldKill
+}
+
+// evaluateRule checks a feed item against a particular rule. It returns whether this entry should be killed or not.
+func (s service) evaluateRule(entry *miniflux.Entry, rule rules.Rule) bool {
+	if rule.Attribute == "tag" {
+		for _, tag := range entry.Tags {
+			if s.evaluateTarget(tag, rule) {
+				return true
+			}
+		}
+		return false
+	} else {
+		// We set the string we want to compare against (https://newsboat.org/releases/2.15/docs/newsboat.html#_filter_language are supported in the killfile format)
+		var entryTarget string
+		switch rule.Attribute {
+		case "title":
+			entryTarget = entry.Title
+		case "content", "description":
+			// include "description" for backwards compatibility with existing killfiles; nobody should be marking entries as read based on the feed's general description
+			entryTarget = entry.Content
+		case "author":
+			entryTarget = entry.Author
+		}
+		return s.evaluateTarget(entryTarget, rule)
+	}
 }
