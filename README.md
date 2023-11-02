@@ -7,7 +7,6 @@ The goal is to support so called [Killfiles](https://en.wikipedia.org/wiki/Kill_
 ## Features
 
 - Supports a subset of so called UseNet killfiles rules
-- Supports remote killfile (Share one killfile with other people, similar to ad-blocking lists)
 - Supports local killfiles on disk
 
 ## Supported Rules
@@ -33,6 +32,7 @@ From the [available rule set](https://newsboat.org/releases/2.15/docs/newsboat.h
 - `title`
 - `content`
 - `author`
+- `tag`
 
 **Comparison Operators**
 
@@ -74,22 +74,14 @@ There are tests in `filter/` that can be used to easily test rules or add new co
 
 ## Deploy
 
-There are the environment variables that can be set. If you want to use a local file you can set `MF_KILLFILE_PATH="~/path/to/killfile"`. A local killfile always overwrites a remote one, even if the remote killfile URL is set (`MF_KILLFILE_URL`). `MF_USERNAME`, `MF_PASSWORD` and `MF_API_ENDPOINT` are your Miniflux credentials. If `MF_REFRESH_INTERVAL` isn't set it's running on every 30 minutes of every hour (`0 30 * * * *`).
-
-Note that `MF_KILLFILE_REFRESH_HOURS` is currently only supported for remote killfiles. You'll need to restart miniflux-sidekick to get it to recognize an updated local killfile.
+There are the environment variables that can be set. You can set `MF_KILLFILE_PATH="~/path/to/killfile"`. `MF_API_ENDPOINT` is your Miniflux url and `MF_API_KEY` is your Miniflux credentials. `MF_REFRESH_INTERVAL` is a cron expression that controls how often the rules are evaluated on Miniflux entries.
 
 ```
-export MF_ENVIRONMENT=development
-export MF_PORT=8181
-export MF_USERNAME=dewey
-export MF_PASSWORD="changeme"
-export MF_API_ENDPOINT=https://rss.notmyhostna.me
-export MF_KILLFILE_URL=https://raw.githubusercontent.com/dewey/miniflux-sidekick/master/killfile
+export MF_API_ENDPOINT=https://rss.example.com
+export MF_API_KEY=abc123
+export MF_KILLFILE_PATH=/path/to/killfile
 export MF_REFRESH_INTERVAL="0 30 * * * *"
-export MF_KILLFILE_REFRESH_HOURS=2
 ```
-
-There's also a Dockerfile and Docker Compose file included so you can easily run it via `docker-compose -f docker-compose.yml up -d`.
 
 ## See Also
 
