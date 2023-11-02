@@ -10,8 +10,8 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/nalabelle/miniflux-sidekick/filter"
 	"github.com/nalabelle/miniflux-sidekick/rules"
-	"github.com/peterbourgon/ff"
-	miniflux "miniflux.app/client"
+	"github.com/peterbourgon/ff/v3"
+	miniflux "miniflux.app/v2/client"
 )
 
 func main() {

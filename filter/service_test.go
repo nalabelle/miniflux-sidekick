@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/nalabelle/miniflux-sidekick/rules"
-	miniflux "miniflux.app/client"
+	miniflux "miniflux.app/v2/client"
 )
 
 func TestEvaluateRules(t *testing.T) {
