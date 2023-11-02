@@ -2,19 +2,19 @@ name: Docker
 
 on:
   workflow_dispatch: {}
-  schedule:
-    - cron: '38 22 1 * *'
   push:
     branches: [ "main" ]
-    paths:
-      - '!LICENSE'
-      - '!README.md'
-      - '!renovate.json'
+    paths-ignore:
+      - 'LICENSE'
+      - 'README.md'
+      - 'renovate.json'
   pull_request:
-    paths:
-      - '!LICENSE'
-      - '!README.md'
-      - '!renovate.json'
+    paths-ignore:
+      - 'LICENSE'
+      - 'README.md'
+      - 'renovate.json'
+  schedule:
+    - cron: '38 22 1 * *'
 
 env:
   REGISTRY: ghcr.io
