@@ -10,17 +10,19 @@ import (
 	"github.com/go-kit/kit/log/level"
 	"github.com/nalabelle/miniflux-sidekick/filter"
 	"github.com/nalabelle/miniflux-sidekick/rules"
-	"github.com/peterbourgon/ff/v3"
+	ff "github.com/peterbourgon/ff/v3"
+	pkg_cron "github.com/robfig/cron/v3"
 	miniflux "miniflux.app/v2/client"
 )
 
 func main() {
 	fs := flag.NewFlagSet("mf", flag.ExitOnError)
 	var (
-		minifluxAPIKey      = fs.String("api-key", "", "api key used for authentication")
-		minifluxAPIEndpoint = fs.String("api-endpoint", "https://rss.notmyhostna.me", "the api of your miniflux instance")
 		killfilePath        = fs.String("killfile-path", "", "the path to the local killfile")
 		logLevel            = fs.String("log-level", "", "the level to filter logs at eg. debug, info, warn, error")
+		minifluxAPIEndpoint = fs.String("api-endpoint", "https://rss.notmyhostna.me", "the api of your miniflux instance")
+		minifluxAPIKey      = fs.String("api-key", "", "api key used for authentication")
+		refreshInterval     = fs.String("refresh-interval", "", "interval defining how often we check for new entries in miniflux")
 	)
 
 	ff.Parse(fs, os.Args[1:],
@@ -71,5 +73,14 @@ func main() {
 	}
 
 	filterService := filter.NewService(l, client, rr)
-	filterService.RunFilterJob(false)
+	cron := pkg_cron.New()
+	level.Info(l).Log("msg", "running filter job in destructive mode", "interval_cron", *refreshInterval)
+	_, err = cron.AddJob(*refreshInterval, filterService)
+	if err != nil {
+		level.Error(l).Log("msg", "error adding cron job to scheduler", "err", err)
+	}
+	cron.Start()
+	for _, e := range cron.Entries() {
+		level.Info(l).Log("msg", "cron job entry scheduled", "id", e.ID, "next_execution", e.Next)
+	}
 }
