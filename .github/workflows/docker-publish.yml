@@ -7,10 +7,14 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'Dockerfile'
+      - '!LICENSE'
+      - '!README.md'
+      - '!renovate.json'
   pull_request:
     paths:
-      - 'Dockerfile'
+      - '!LICENSE'
+      - '!README.md'
+      - '!renovate.json'
 
 env:
   REGISTRY: ghcr.io
