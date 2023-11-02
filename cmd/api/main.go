@@ -79,8 +79,5 @@ func main() {
 	if err != nil {
 		level.Error(l).Log("msg", "error adding cron job to scheduler", "err", err)
 	}
-	cron.Start()
-	for _, e := range cron.Entries() {
-		level.Info(l).Log("msg", "cron job entry scheduled", "id", e.ID, "next_execution", e.Next)
-	}
+	cron.Run()
 }
