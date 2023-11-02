@@ -7,6 +7,7 @@ require (
 	github.com/peterbourgon/ff v1.7.1
 	github.com/peterbourgon/ff/v3 v3.4.0
 	miniflux.app v1.0.46
+	miniflux.app/v2 v2.0.49
 )
 
 require (
