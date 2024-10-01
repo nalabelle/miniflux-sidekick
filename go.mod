@@ -2,7 +2,7 @@ module github.com/nalabelle/miniflux-sidekick
 
 go 1.22
 
-toolchain go1.23.1
+toolchain go1.23.2
 
 require (
 	github.com/go-kit/kit v0.13.0
