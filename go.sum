@@ -18,3 +18,5 @@ miniflux.app/v2 v2.1.2 h1:2mw944rbNepSvIpqSOfGQY7jQGEwyCJgtVgcKr82ZX4=
 miniflux.app/v2 v2.1.2/go.mod h1:4zviN31w3+XYPJMukMv/Ugoh/LnUyoAM3KWGEMPQQCk=
 miniflux.app/v2 v2.2.0 h1:eBFbJte5Mmf9Y2+eag1xtTV4bxhnUKs/oYVOgEU+eDk=
 miniflux.app/v2 v2.2.0/go.mod h1:4bglMXMeJHr2aGBEN5Bj/w8tIoMuOvrRpLMyVK9YFX8=
+miniflux.app/v2 v2.2.7 h1:hXS54w6d8e4t9KHmRM18zYDksEfNPTC5mZ4EnYgSzlQ=
+miniflux.app/v2 v2.2.7/go.mod h1:yryzMfpO1XoJp8AtdmF0vnan6BYE8oEscK/hEkNrq+s=
